@@ -121,7 +121,7 @@ int parseCommand(char *cLine, struct command_t *cmd) {
    return 1;
 }
 
-/* End parseCommand function */
+/* End parseCommand function *///////
 
 /* Print prompt and read command functions - Nutt pp. 79-80 */
 
