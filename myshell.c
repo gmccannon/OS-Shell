@@ -38,6 +38,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 
 #define MAX_ARGS		64
 #define MAX_ARG_LEN		16
@@ -56,12 +59,16 @@ void printPrompt();
 void readCommand(char *);
 
 int main(int argc, char *argv[]) {
+
+   if(argc > 0){};
+   if(argv){};
+
    int pid;
    int status;
    char cmdLine[MAX_LINE_LEN];
    struct command_t command;
 
-   while (TRUE) {
+   while (true) {
       printPrompt();
       /* Read the command line and parse it */
       readCommand(cmdLine);
@@ -129,7 +136,7 @@ void printPrompt() {
    /* Build the prompt string to have the machine name,
     * current directory, or other desired information
     */
-   promptString = "(Linix) 4713281> "; /* EDIT THIS LINE */
+   char promptString[] = "Linux (gwm13)|> "; /* EDIT THIS LINE */
    printf("%s ", promptString);
 }
 
