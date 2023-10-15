@@ -43,7 +43,7 @@
 #include <sys/wait.h>
 
 #define MAX_ARGS		64
-#define MAX_ARG_LEN		16
+#define MAX_ARG_LEN		160
 #define MAX_LINE_LEN	80
 #define WHITESPACE		" ,\t\n"
 
@@ -89,6 +89,8 @@ void printHelp();
 
 int main(int argc, char *argv[]) {
 
+   //dummy functions to avoid unused parameter error
+   //comment out both functions if there is a warning on your end
    if(argc){};
    if(argv){};
 
@@ -97,7 +99,7 @@ int main(int argc, char *argv[]) {
    char cmdLine[MAX_LINE_LEN];
    struct command_t command;
    const char *executable = NULL; //character used for the lookup table
-
+   
    while (true) 
    {
       printPrompt();
