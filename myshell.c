@@ -19,7 +19,7 @@
 //
 //
 //
-// Signed:_____________________________________ Date:_____________
+// Signed: George McCannon Date: Oct 15, 2023
 
 // 3460:426 Lab 1 - Basic C shell rev. 9/10/2020
 
@@ -73,6 +73,7 @@ struct command_mapping commandMap[] = {
     {"W", "clear"},
     {"P", "more"},
     {"X", NULL},
+    {"V", "vim"},
 };
 
 /*
@@ -146,19 +147,19 @@ int main(int argc, char *argv[]) {
     	   }
 	}
 	  
-      // Check if the command is in the lookup table then run execvp with custom name
-      // if not, attempt to run as normal with entered command
+      // Check if the command is not in the lookup table then run execvp
+      // if yes, attempt to run as normal with the custom command
       if (executable == NULL) 
       {
          // Create a child process to execute the command
 	 if ((pid = fork()) == 0) 
 	 {
             // Child executing command
-            // Handle the case where execvp fails (invalid components)
+            // Handle the case where execvp fails (invalid command)
             // If execvp is successful, run as normal, if not, kill the child
             if (execvp(command.name, command.argv) == -1) 
             {
-               perror(command.name);
+               printf("Invalid Command: %s\n", command.name);
                exit(1);
             }
          }
@@ -182,10 +183,11 @@ int main(int argc, char *argv[]) {
       //end command run conditions
       
       /*
-      set executable variable to null to prevent a bug where incorrect 
+      set executable variable to null to prevent a bug where invalid 
       commands executed after vaild commands are ran as the valid command
       */
       executable = NULL; 
+      
       // Wait for the child to terminate
       wait(&status);
    }
@@ -232,17 +234,18 @@ int parseCommand(char *cLine, struct command_t *cmd) {
 /* Print help guide, from OS shell PDF */
 void printHelp()
 {
-   printf("\n\tList of commands: \n"
-         "C file1 file2        Copy; create file2, copy all bytes of file1 to file2\n"
-         "D file               Delete the named file.\n"
-         "E comment            Echo; display comment on screen followed by a new line\n"
-         "H Help;              display the user manual.\n"
-         "L                    List the contents of the current directory.\n"
-         "M file               Make; create the named text file by launching the nano text editor.\n"
-         "P file               Print; display the contents of the named file on screen.\n"
-         "Q                    Quit the shell.\n"
-         "S                    Surf the web by launching a browser as a background process.\n"
-         "W                    Wipe; clear the screen.\n\n"
+   printf("\nList of commands: \n"
+      "C file1 file2       Copy; create file2 then copy all contents of file1 to file2\n"
+      "D file              Delete the named file.\n"
+      "E comment           Echo; display comment on screen followed by a new line\n"
+      "H                   Help; display the user manual.\n"
+      "L                   List the contents of the current directory.\n"
+      "M file              Make; create the named text file by launching the nano text editor.\n"
+      "P file              Print; display the contents of the named file on screen.\n"
+      "Q                   Quit the shell.\n"
+      "S                   Surf the web by launching firefox as a background process.\n"
+      "W                   Wipe; clear the screen.\n"
+      "V file              Vim; Create the named text file through Vim.\n\n"
           );
 }
 
