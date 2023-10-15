@@ -53,46 +53,145 @@ struct command_t {
    char *argv[MAX_ARGS];
 };
 
+
+/*
+   structures for the lookup table to make the command names custom
+*/
+
+struct command_mapping {
+   const char *name;
+   const char *executable;
+};
+
+struct command_mapping commandMap[] = {
+    {"C", "cp"},
+    {"D", "rm"},
+    {"E", "echo"},
+    {"L", "ls"},
+    {"M", "nano"},
+    {"S", "firefox"},
+    {"W", "clear"},
+    {"P", "more"},
+    {"X", NULL},
+};
+
+/*
+   end lookup table
+*/
+
+
 /* Function prototypes */
 int parseCommand(char *, struct command_t *);
 void printPrompt();
 void readCommand(char *);
+void printHelp();
 
 int main(int argc, char *argv[]) {
 
-   if(argc > 0){};
+   if(argc){};
    if(argv){};
 
    int pid;
    int status;
    char cmdLine[MAX_LINE_LEN];
    struct command_t command;
+   const char *executable = NULL; //character used for the lookup table
 
-   while (true) {
+   while (true) 
+   {
       printPrompt();
       /* Read the command line and parse it */
       readCommand(cmdLine);
       parseCommand(cmdLine, &command);
       command.argv[command.argc] = NULL;
 
-	  /*
-	     TODO: if the command is one of the shortcuts you're testing for
-		 either execute it directly or build a new command structure to
-		 execute next
-	  */
-	  
-      /* Create a child process to execute the command */
-      if ((pid = fork()) == 0) {
-         /* Child executing command */
-         execvp(command.name, command.argv);
-	 /* TODO: what happens if you enter an incorrect command? */
+      /* 
+        Custom Commands not using execvp
+        If one of the following commands is used, do not fork,
+        break or go to the top of the loop
+      */
+      
+      // Check if the command is "Q" and exit the shell
+      if (strcmp(cmdLine, "Q") == 0) 
+      {
+         printf("Exiting the shell.\n");
+         break;
       }
-      /* Wait for the child to terminate */
-      wait(&status); /* EDIT THIS LINE */
+      
+      // Check if the command is "H" and print the help page
+      if (strcmp(cmdLine, "H") == 0) 
+      {
+         printHelp();
+         continue;
+      }
+      
+      /*
+        end custom commands
+      */
+      
+	  
+      // Look up the command in the mapping table
+	for (long unsigned int i = 0; i < sizeof(commandMap) / sizeof(commandMap[0]); i++) {
+    	   if (strcmp(cmdLine, commandMap[i].name) == 0) 
+    	   {
+              if (commandMap[i].executable == NULL) 
+              {
+                 // Handle the custom X command, use the argument as the executable
+                 executable = command.argv[1]; 
+              } 
+              else 
+              {
+                 executable = commandMap[i].executable;
+              }
+    	   }
+	}
+	  
+      // Check if the command is in the lookup table then run execvp with custom name
+      // if not, attempt to run as normal with entered command
+      if (executable == NULL) 
+      {
+         // Create a child process to execute the command
+	 if ((pid = fork()) == 0) 
+	 {
+            // Child executing command
+            // Handle the case where execvp fails (invalid components)
+            // If execvp is successful, run as normal, if not, kill the child
+            if (execvp(command.name, command.argv) == -1) 
+            {
+               perror(command.name);
+               exit(1);
+            }
+         }
+      }
+      else
+      {
+         // Create a child process to execute the command
+	 if ((pid = fork()) == 0) 
+	 {
+            // Child executing command
+            // Handle the case where execvp fails (invalid components)
+            // If execvp is successful, run as normal, if not, kill the child
+            if (execvp(executable, command.argv) == -1) 
+            {
+               perror("execvp");
+               exit(1);
+            }
+         }
+      }
+      
+      //end command run conditions
+      
+      /*
+      set executable variable to null to prevent a bug where incorrect 
+      commands executed after vaild commands are ran as the valid command
+      */
+      executable = NULL; 
+      // Wait for the child to terminate
+      wait(&status);
    }
-
+   
    /* Shell termination */
-   printf("\n\n shell: Terminating successfully\n");
+   printf("\n\nshell: Terminating successfully\n");
    return 0;
 }
 
@@ -130,14 +229,37 @@ int parseCommand(char *cLine, struct command_t *cmd) {
 
 /* End parseCommand function *///////
 
+/* Print help guide, from OS shell PDF */
+void printHelp()
+{
+   printf("\n\tList of commands: \n"
+         "C file1 file2        Copy; create file2, copy all bytes of file1 to file2\n"
+         "D file               Delete the named file.\n"
+         "E comment            Echo; display comment on screen followed by a new line\n"
+         "H Help;              display the user manual.\n"
+         "L                    List the contents of the current directory.\n"
+         "M file               Make; create the named text file by launching the nano text editor.\n"
+         "P file               Print; display the contents of the named file on screen.\n"
+         "Q                    Quit the shell.\n"
+         "S                    Surf the web by launching a browser as a background process.\n"
+         "W                    Wipe; clear the screen.\n\n"
+          );
+}
+
+
 /* Print prompt and read command functions - Nutt pp. 79-80 */
 
 void printPrompt() {
    /* Build the prompt string to have the machine name,
     * current directory, or other desired information
     */
-   char promptString[] = "Linux (gwm13)|> "; /* EDIT THIS LINE */
-   printf("%s ", promptString);
+   char promptString[] = "gwm13@Linux-os";
+   char cwd[MAX_LINE_LEN];
+   
+   printf("%s:~", promptString);
+   if (getcwd(cwd, sizeof(cwd)) != NULL) {
+       printf("%s$ ", cwd);
+   }
 }
 
 void readCommand(char *buffer) {
