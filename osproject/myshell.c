@@ -127,7 +127,6 @@ int main(int argc, char *argv[]) {
          printHelp();
          continue;
       }
-           
       
       /*
         end custom commands
@@ -165,20 +164,6 @@ int main(int argc, char *argv[]) {
                
                printf("Invalid Command: %s\n", command.name);
                exit(1);
-            }
-         }
-      }
-      //if the command is L, handle the command specially to support extra "-l"
-      else if (strcmp(cmdLine, "L") == 0) 
-      {
-         if ((pid = fork()) == 0)
-         {
-            // cast the list as char* to string literal comparison warning
-            char *arg[] = {(char*)"ls", (char*)"-l", NULL};
-            if (execvp("ls", arg) == -1) 
-            {
-               printf("Invalid Command: %s\n", command.name);
-               exit(1);  
             }
          }
       }
