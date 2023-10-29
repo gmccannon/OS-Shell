@@ -171,14 +171,19 @@ int main(int argc, char *argv[]) {
       //if the command is L, handle the command specially to support extra "-l"
       else if (strcmp(cmdLine, "L") == 0) 
       {
+         char cwd[MAX_LINE_LEN];
+         if (getcwd(cwd, sizeof(cwd)) != NULL) 
+         {
+            printf("\n%s$ \n\n", cwd);
+         }
          if ((pid = fork()) == 0)
          {
-            // cast the list as char* to string literal comparison warning
+            // cast the list as char* to avoid string literal comparison warning
             char *arg[] = {(char*)"ls", (char*)"-l", NULL};
             if (execvp("ls", arg) == -1) 
             {
                printf("Invalid Command: %s\n", command.name);
-               exit(1);  
+               exit(1);
             }
          }
       }
@@ -274,13 +279,8 @@ void printPrompt() {
    /* Build the prompt string to have the machine name,
     * current directory, or other desired information
     */
-   char promptString[] = "gwm13@Linux-os";
-   char cwd[MAX_LINE_LEN];
-   
-   printf("%s:~", promptString);
-   if (getcwd(cwd, sizeof(cwd)) != NULL) {
-       printf("%s$ ", cwd);
-   }
+   char promptString[] = "Linux(gwm13)|>";
+   printf("%s", promptString);
 }
 
 void readCommand(char *buffer) {
